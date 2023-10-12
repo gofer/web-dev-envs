@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# ライブラリ読み出し
+source "$(dirname $0)/library.sh"
+
+
+# 機密情報の読み出し
+if [ "$SECRET_FILE" != '' -a -f "$SECRET_FILE" ]; then
+  source "$SECRET_FILE"
+fi
+
+
+# パスフレーズ読み取り
+ROOT_CA_PASSWORD="${ROOT_CA_PASSWORD:=""}"
+if [ "$ROOT_CA_PASSWORD" == '' ]; then
+  readPassword \
+    "Input root CA passphrase: " \
+    ROOT_CA_PASSWORD
+fi
+
+INTER_CA_PASSWORD="${INTER_CA_PASSWORD:=""}"
+if [ "$INTER_CA_PASSWORD" == '' ]; then
+  readPassword \
+    "Input intermediate CA passphrase: " \
+    INTER_CA_PASSWORD
+fi
+
+
+# CRL生成
+
+## ルートCA
+openssl ca \
+  -batch \
+  -gencrl \
+  -md sha256 \
+  -config "$CONFIG_FILE" \
+  -section CA_root \
+  -extensions root_ca \
+  -passin "pass:$ROOT_CA_PASSWORD" \
+  -out "$CRL_DIR/root_ca.crl"
+
+## 中間CA
+openssl ca \
+  -batch \
+  -gencrl \
+  -md sha256 \
+  -config "$CONFIG_FILE" \
+  -section CA_inter \
+  -extensions inter_ca \
+  -passin "pass:$INTER_CA_PASSWORD" \
+  -out "$CRL_DIR/inter_ca.crl"

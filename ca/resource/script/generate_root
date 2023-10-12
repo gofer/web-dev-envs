@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# ライブラリ読み出し
+source "$(dirname $0)/library.sh"
+
+
+# 機密情報の読み出し
+if [ "$SECRET_FILE" != '' -a -f "$SECRET_FILE" ]; then
+  source "$SECRET_FILE"
+fi
+
+
+# パスフレーズ読み取り
+ROOT_CA_PASSWORD="${ROOT_CA_PASSWORD:=""}"
+if [ "$ROOT_CA_PASSWORD" == '' ]; then
+  verifyPassword \
+    'Input root CA passphrase:' \
+    'Verify root CA passphrase:' \
+    ROOT_CA_PASSWORD
+
+  if [ $? -ne 0 ]; then
+    echo 'Password mismatch' > /dev/stderr
+    exit 1
+  fi
+fi
+
+
+# 初期化
+ROOT_CA_DIR="${ROOT_CA_DIR:="/etc/ssl/root_ca"}"
+if [ ! -d "$ROOT_CA_DIR" ]; then
+  mkdir "$ROOT_CA_DIR"
+fi
+initializeCADir "$ROOT_CA_DIR"
+
+
+# 鍵生成
+openssl genrsa \
+  -batch \
+  -passout "pass:$ROOT_CA_PASSWORD" \
+  -out "$ROOT_CA_DIR/private/private_key.pem" \
+  -aes-256-cbc \
+  4096
+
+if [ $? -ne 0 ]; then
+  echo 'Failed to generate ras key.' > /dev/stderr
+  exit 1
+fi
+
+
+# リクエスト
+openssl req \
+  -batch -new -utf8  \
+  -config "$CONFIG_FILE" \
+  -section req_RootCA \
+  -extensions root_ca \
+  -passin "pass:$ROOT_CA_PASSWORD" \
+  -keyform PEM \
+  -key "$ROOT_CA_DIR/private/private_key.pem" \
+  -outform PEM \
+  -out "$ROOT_CA_DIR/root_ca.csr"
+
+if [ $? -ne 0 ]; then
+  echo "Failed to generate requeset. ($CONFIG_FILE)" > /dev/stderr
+  exit 1
+fi
+
+
+# 署名
+openssl ca \
+  -batch \
+  -config "$CONFIG_FILE" \
+  -section CA_root \
+  -extensions root_ca \
+  -md sha256 \
+  -in "$ROOT_CA_DIR/root_ca.csr" \
+  -passin "pass:$ROOT_CA_PASSWORD" \
+  -selfsign \
+  -cert "$ROOT_CA_DIR/certs/root_ca.crt" \
+  -keyform PEM \
+  -keyfile "$ROOT_CA_DIR/private/private_key.pem" \
+  -days 1825 \
+  -out "$ROOT_CA_DIR/certs/root_ca.crt"
+
+if [ $? -ne 0 ]; then
+  echo 'Failed to generate certificate.' > /dev/stderr
+  exit 1
+fi
+
+# 確認
+# openssl rsa -noout -text -passin "pass:${ROOT_CA_PASSWORD}" -in "$ROOT_CA_DIR/private/private_key.pem" 
+# openssl x509 -batch -noout -text -in ./root_ca.crt

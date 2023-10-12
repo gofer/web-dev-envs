@@ -33,6 +33,20 @@ services:
     ports:
       - 127.0.0.1:53:53
       - 127.0.0.1:53:53/udp
+  ca:
+    image: certificate_authority
+    build:
+      context: ca
+      dockerfile: Dockerfile
+    container_name: certificate-authority
+    hostname: internal.ca.localdomain
+    env_file:
+      - ca/.env
+    secrets:
+      - ca_secret
+    networks:
+      dev-internal:
+        ipv4_address: "${CA_INTERNAL_IPADDRESS}"
 
 networks:
   default:
@@ -51,3 +65,7 @@ networks:
       config:
         - subnet: "${INTERNAL_IPRANGE}"
           gateway: "${INTERNAL_GATEWAY}"
+
+secrets:
+  ca_secret:
+    file: ca/.secret
