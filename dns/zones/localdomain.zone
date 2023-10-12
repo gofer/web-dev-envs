@@ -1,0 +1,17 @@
+$ORIGIN localdomain.
+$TTL 3600
+
+@ IN SOA ns.localdomain. admin.localdomain. (
+       2012040101 ; Serial
+       3600       ; Refresh
+       900        ; Retry
+       3600000    ; Expire
+       3600       ; Minimum
+)
+
+                       NS      ns.localdomain.
+@                  IN  A       127.0.0.1
+ns                 IN  A       127.0.0.1
+ca                 IN  A       127.0.0.1
+apps               IN  CNAME   ns
+app1.apps          IN  CNAME   apps

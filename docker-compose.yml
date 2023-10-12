@@ -1,0 +1,53 @@
+services:
+  nsd:
+    image: dns_nsd
+    build:
+      context: dns
+      dockerfile: nsd/Dockerfile
+      args:
+        - ipv4_internal_iprange=${INTERNAL_IPRANGE}
+        - ipv4_nsd_internal_addr=${NSD_INTERNAL_IPADDRESS}
+    container_name: dns-nsd
+    hostname: nsd.ns.localdomain
+    networks:
+      dev-internal:
+        ipv4_address: "${NSD_INTERNAL_IPADDRESS}"
+  unbound:
+    image: dns_unbound
+    build:
+      context: dns
+      dockerfile: unbound/Dockerfile
+      args:
+        - ipv4_internal_iprange=${INTERNAL_IPRANGE}
+        - ipv4_unbound_internal_addr=${UNBOUND_INTERNAL_IPADDRESS}
+        - ipv4_nsd_internal_addr=${NSD_INTERNAL_IPADDRESS}
+        - dns_primary=${DNS_PRIMARY}
+        - dns_secondary=${DNS_SECONDARY}
+    container_name: dns-unbound
+    hostname: unbound.ns.localdomain
+    networks:
+      default:
+        ipv4_address: "${UNBOUND_EXTERNAL_IPADDRESS}"
+      dev-internal:
+        ipv4_address: "${UNBOUND_INTERNAL_IPADDRESS}"
+    ports:
+      - 127.0.0.1:53:53
+      - 127.0.0.1:53:53/udp
+
+networks:
+  default:
+    driver: bridge
+    internal: false
+    ipam:
+      driver: default
+      config:
+        - subnet: "${EXTERNAL_IPRANGE}"
+          gateway: "${EXTERNAL_GATEWAY}"
+  dev-internal:
+    driver: bridge
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: "${INTERNAL_IPRANGE}"
+          gateway: "${INTERNAL_GATEWAY}"
