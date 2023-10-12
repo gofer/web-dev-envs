@@ -138,12 +138,3 @@ keyUsage               = digitalSignature, keyAgreement, keyEncipherment
 extendedKeyUsage       = serverAuth
 crlDistributionPoints  = URI:http://ca.localdomain/inter_ca.crl
 authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2561
-
-[ ocsp ]
-subjectKeyIdentifier   = hash
-authorityKeyIdentifier = keyid,issuer
-basicConstraints       = CA:FALSE
-keyUsage               = critical, digitalSignature, keyAgreement, keyEncipherment, nonRepudiation
-extendedKeyUsage       = critical, OCSPSigning
-#noCheck=yes
-authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2560
