@@ -1,0 +1,36 @@
+server:
+	interface: 0.0.0.0
+	access-control: 127.0.0.1 allow
+	access-control: {{ container.ipv4_cidr }} allow
+	access-control: 172.16.0.0/12 allow
+	access-control: 0.0.0.0/0 refuse
+	port: 53
+	username: "unbound"
+	logfile: "/dev/stdout"
+	do-not-query-localhost: no
+{%- for zone in zones %}
+	local-zone: "{{ zone.name }}" nodefault
+{%- if not zone.secure %}
+	domain-insecure: "{{ zone.name }}"
+{%- endif %}
+{%- endfor %}
+
+{% for zone in zones %}
+stub-zone:
+	name: "{{ zone.name }}"
+	stub-addr: {{ zone.authority.ipv4 }}@{{ zone.authority.port }}
+{% endfor %}
+
+forward-zone:
+	name: "."
+	forward-addr: {{ dns.primary }}
+	forward-addr: {{ dns.secondary }}
+
+remote-control:
+	control-enable: yes
+	control-interface: 127.0.0.1
+	control-port: 8953
+	server-key-file: "/etc/unbound/unbound_server.key"
+	server-cert-file: "/etc/unbound/unbound_server.pem"
+	control-key-file: "/etc/unbound/unbound_control.key"
+	control-cert-file: "/etc/unbound/unbound_control.pem"

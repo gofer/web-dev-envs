@@ -1,2 +1,4 @@
 .env
 .secret
+dns/zones/*
+!dns/zones/localdomain.zone

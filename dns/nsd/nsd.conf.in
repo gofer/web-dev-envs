@@ -1,0 +1,31 @@
+server:
+	server-count: 1
+	ip-address: 127.0.0.1
+	ip-address: {{ container.ipv4 }}
+	port: 53
+	username: nsd
+	do-ip4: yes
+	do-ip6: no
+	hide-version: yes
+	identity: ""
+	verbosity: 2
+	logfile: "/dev/stdout"
+	log-only-syslog: no
+	database: ""
+	chroot: ""
+	zonesdir: "/etc/nsd/zones"
+
+remote-control:
+	control-enable: yes
+	control-interface: 127.0.0.1
+	control-port: 8952
+	server-key-file: "/etc/nsd/nsd_server.key"
+	server-cert-file: "/etc/nsd/nsd_server.pem"
+	control-key-file: "/etc/nsd/nsd_control.key"
+	control-cert-file: "/etc/nsd/nsd_control.pem"
+
+{% for zone in zones %}
+zone:
+	name: "{{ zone.name }}"
+	zonefile: {{ zone.file }}
+{% endfor %}
