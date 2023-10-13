@@ -36,7 +36,6 @@ fi
 ROOT_CA_DIR="${ROOT_CA_DIR:="/etc/ssl/root_ca"}"
 INTER_CA_DIR="${INTER_CA_DIR:="/etc/ssl/inter_ca"}"
 
-echo "DN = $DN, SUBJECT = $SUBJECT, SAN = $SAN"
 
 # ドメイン名(DN; Distinguished Name)
 DN="${DN:="apps.localdomain"}"

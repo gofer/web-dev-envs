@@ -3,32 +3,30 @@
 # ライブラリ読み出し
 source "$(dirname $0)/library.sh"
 
-# 環境の読み出し
-if [ -f "$(dirname $0)/.env" ]; then
-  source "$(dirname $0)/.env"
-fi
 
+# 機密情報の読み出し
 if [ "$SECRET_FILE" != '' -a -f "$SECRET_FILE" ]; then
   source "$SECRET_FILE"
 fi
 
 
-# 設定ファイルのディレクトリ
-CONFIG_DIR="${CONFIG_DIR:="."}"
+# パスフレーズ読み取り
+INTER_CA_PASSWORD="${INTER_CA_PASSWORD:=""}"
+if [ "$INTER_CA_PASSWORD" == '' ]; then
+  readPassword \
+    "Input intermediate CA passphrase: " \
+    INTER_CA_PASSWORD
+fi
+
 
 # 初期化
 ROOT_CA_DIR="${ROOT_CA_DIR:="/etc/ssl/root_ca"}"
 INTER_CA_DIR="${INTER_CA_DIR:="/etc/ssl/inter_ca"}"
 
+
 # ドメイン名(DN; Distinguished Name)
 DN="${DN:="apps.localdomain"}"
 CRL_REASON=${CRL_REASON:="superseded"}
-
-# パスフレーズ読み取り
-INTER_CA_PASSWORD=''
-readPassword \
-  "Input intermediate CA passphrase: " \
-  INTER_CA_PASSWORD
 
 
 # 失効

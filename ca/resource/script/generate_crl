@@ -37,7 +37,7 @@ openssl ca \
   -section CA_root \
   -extensions root_ca \
   -passin "pass:$ROOT_CA_PASSWORD" \
-  -out "$CRL_DIR/root_ca.crl"
+  -out "$ROOT_CA_DIR/crl/root_ca.crl"
 
 ## 中間CA
 openssl ca \
@@ -48,4 +48,19 @@ openssl ca \
   -section CA_inter \
   -extensions inter_ca \
   -passin "pass:$INTER_CA_PASSWORD" \
-  -out "$CRL_DIR/inter_ca.crl"
+  -out "$ROOT_CA_DIR/crl/inter_ca.crl"
+
+
+# CDP向けシンボリックリンク
+
+## ルートCA
+if [ -f "$CRL_DIR/root_ca.crl" ]; then
+  rm "$CRL_DIR/root_ca.crl"
+fi
+ln -s "$ROOT_CA_DIR/crl/root_ca.crl" "$CRL_DIR/root_ca.crl"
+
+## 中間CA
+if [ -f "$CRL_DIR/inter_ca.crl" ]; then
+  rm "$CRL_DIR/inter_ca.crl"
+fi
+ln -s "$ROOT_CA_DIR/crl/inter_ca.crl" "$CRL_DIR/inter_ca.crl"

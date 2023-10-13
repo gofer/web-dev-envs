@@ -106,6 +106,3 @@ if [ $? -ne 0 ]; then
   echo 'Failed to generate certificate chain.' > /dev/stderr
   exit 1
 fi
-
-# 確認
-# openssl x509 -batch -noout -text -in "$dir/certs/inter_ca.crt"

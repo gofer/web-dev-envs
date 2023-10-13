@@ -9,6 +9,8 @@ COPY entrypoint.sh /entrypoint.sh
 RUN apk update && apk upgrade \
  && apk add openssl nginx
 
+RUN openssl rand -writerand /root/.rnd
+
 RUN cp /etc/ssl/openssl.cnf /etc/ssl/openssl.orginal.cnf
 COPY resource/ssl/openssl.cnf /etc/ssl/openssl.cnf
 RUN chmod 644 /etc/ssl/openssl.cnf
