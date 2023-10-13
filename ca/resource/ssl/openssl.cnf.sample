@@ -1,0 +1,140 @@
+HOME     = .
+RANDFILE = $ENV::HOME/.rnd
+
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+database        = ./index.txt
+new_certs_dir   = .
+serial          = ./serial
+crlnumber       = ./crlnumber
+RANDFILE        = ./.random
+crl_extensions  = crl_ext
+preserve        = no
+policy          = policy_match
+copy_extensions = copy
+default_md      = default	
+
+[ CA_root ]
+prompt            = no
+dir               = /etc/ssl/root_ca
+RANDFILE          = $dir/private/.random
+database          = $dir/index.txt
+serial            = $dir/serial
+certs             = $dir/certs
+certificate       = $dir/certs/root_ca.crt
+new_certs_dir     = $dir/newcerts
+private_key       = $dir/private/private_key.pem
+crlnumber         = $dir/crlnum
+crl_dir           = $dir/crl
+crl               = $dir/crl/rootca_crl.pem
+default_crl_days  = 30
+preserve          = no
+policy            = policy_match
+copy_extensions   = copy
+default_days      = 3650
+
+[ CA_inter ]
+prompt            = no
+dir               = /etc/ssl/inter_ca
+RANDFILE          = $dir/private/.random
+database          = $dir/index.txt
+serial            = $dir/serial
+certs             = $dir/certs
+certificate       = $dir/certs/inter_ca.crt
+new_certs_dir     = $dir/newcerts
+private_key       = $dir/private/private_key.pem
+crlnumber         = $dir/crlnum
+crl_dir           = $dir/crl
+crl               = $dir/crl/interca_crl.pem
+default_crl_days  = 30
+preserve          = no
+policy            = policy_match
+copy_extensions   = copy
+default_days      = 1825
+
+[ policy_match ]
+countryName             = match
+stateOrProvinceName     = optional
+localityName		        = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ v3_ca ]
+crlDistributionPoints = URI:http://ca.localdomain/root_ca.crl
+
+[ req ]
+distinguished_name = req_distinguished_name
+string_mask        = utf8only
+
+[ req_distinguished_name ]
+countryName            = JP
+stateOrProvinceName    = Tokyo
+localityName           = Chiyoda-ku
+0.organizationName     = localdomain
+organizationalUnitName = PKI manager
+commonName             = localdomain Root CA
+emailAddress           = admin@localdomain
+
+[ req_RootCA ]
+distinguished_name = req_RootCA_distinguished_name
+prompt             = no
+string_mask        = utf8only
+
+[ req_RootCA_distinguished_name ]
+countryName            = JP
+stateOrProvinceName    = Tokyo
+localityName           = Chiyoda-ku
+0.organizationName     = localdomain
+organizationalUnitName = Root CA
+commonName             = localdomain Root CA
+#emailAddress           = admin@localdomain
+
+[ root_ca ]
+subjectKeyIdentifier  = hash
+basicConstraints      = critical, CA:TRUE
+keyUsage              = critical, digitalSignature, cRLSign, keyEncipherment, keyCertSign
+crlDistributionPoints = URI:http://ca.localdomain/root_ca.crl
+authorityInfoAccess   = OCSP;URI:http://ca.localdomain:2560
+
+[ inter_ca_req ]
+distinguished_name = inter_ca_req_distinguished_name
+prompt             = no
+string_mask        = utf8only
+
+[ inter_ca_req_distinguished_name ]
+countryName            = JP
+stateOrProvinceName    = Tokyo
+localityName           = Chiyoda-ku
+0.organizationName     = localdomain
+organizationalUnitName = Intermediate CA
+commonName             = localdomain Intermediate CA
+#emailAddress           = admin@localdomain
+
+[ inter_ca ]
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always, issuer
+basicConstraints       = critical, CA:TRUE, pathlen:0
+keyUsage               = critical, digitalSignature, cRLSign, keyEncipherment, keyCertSign
+crlDistributionPoints  = URI:http://ca.localdomain/inter_ca.crl
+authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2561
+
+[ usr ]
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid, issuer
+basicConstraints       = CA:FALSE
+
+[ crl_ext ]
+authorityKeyIdentifier = keyid:always,issuer
+
+[ web_server_ca ]
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always
+basicConstraints       = CA:FALSE
+keyUsage               = digitalSignature, keyAgreement, keyEncipherment
+extendedKeyUsage       = serverAuth
+crlDistributionPoints  = URI:http://ca.localdomain/inter_ca.crl
+authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2561

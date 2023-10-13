@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# ライブラリ読み出し
+source "$(dirname $0)/library.sh"
+
+
+# 機密情報の読み出し
+if [ "$SECRET_FILE" != '' -a -f "$SECRET_FILE" ]; then
+  source "$SECRET_FILE"
+fi
+
+
+# パスフレーズ読み取り
+INTER_CA_PASSWORD="${INTER_CA_PASSWORD:=""}"
+if [ "$INTER_CA_PASSWORD" == '' ]; then
+  readPassword \
+    "Input intermediate CA passphrase: " \
+    INTER_CA_PASSWORD
+fi
+
+
+# 初期化
+ROOT_CA_DIR="${ROOT_CA_DIR:="/etc/ssl/root_ca"}"
+INTER_CA_DIR="${INTER_CA_DIR:="/etc/ssl/inter_ca"}"
+
+
+# ドメイン名(DN; Distinguished Name)
+DN="${DN:="apps.localdomain"}"
+CRL_REASON=${CRL_REASON:="superseded"}
+
+
+# 失効
+openssl ca \
+  -batch \
+  -config "$CONFIG_DIR/openssl.cfg" \
+  -section CA_inter \
+  -extensions inter_ca \
+  -md sha256 \
+  -passin "pass:$INTER_CA_PASSWORD" \
+  -keyform PEM \
+  -keyfile "$INTER_CA_DIR/private/private_key.pem" \
+  -cert "$INTER_CA_DIR/certs/inter_ca.crt" \
+  -revoke "$DN.crt" \
+  -crl_reason "$CRL_REASON"
+
+if [ $? -ne 0 ]; then
+  echo 'Failed to revoke certificate.' > /dev/stderr
+  exit 1
+fi
