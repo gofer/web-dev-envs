@@ -1,4 +1,5 @@
-$ContainerName = 'certificate-authority';
+$CAContainerName = 'certificate-authority';
+$NginxContainerName = 'reverse-proxy';
 
 $password = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR(
   [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR(
@@ -71,14 +72,17 @@ if (![string]::IsNullOrEmpty($subAltName)) {
 $command += "' ";
 $command += 'generate_server && generate_crl';
 
-docker exec $ContainerName sh -c "$command";
+docker exec $CAContainerName sh -c "$command";
 
 
 $privateKeyFilePath = "/etc/ssl/inter_ca/private/${CN}.nopass.pem";
-docker cp ("${ContainerName}:${privateKeyFilePath}") .;
+docker cp ("${CAContainerName}:${privateKeyFilePath}") .;
+docker cp "${CN}.nopass.pem" ("${NginxContainerName}:/etc/ssl/private/${CN}.nopass.pem");
 
 $certFilePath = "/etc/ssl/inter_ca/certs/${CN}.crt";
-docker cp ("${ContainerName}:${certFilePath}") .;
+docker cp ("${CAContainerName}:${certFilePath}") .;
+docker cp "${CN}.crt" ("${NginxContainerName}:/etc/ssl/certs/${CN}.crt");
 
 $certChainFilePath = "/etc/ssl/inter_ca/certs/${CN}.chain.crt";
-docker cp ("${ContainerName}:${certChainFilePath}") .;
+docker cp ("${CAContainerName}:${certChainFilePath}") .;
+docker cp "${CN}.chain.crt" ("${NginxContainerName}:/etc/ssl/certs/${CN}.chain.crt");

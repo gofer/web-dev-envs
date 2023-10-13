@@ -47,6 +47,22 @@ services:
     networks:
       dev-internal:
         ipv4_address: "${CA_INTERNAL_IPADDRESS}"
+  nginx:
+    image: reverse_proxy
+    build:
+      context: reverse_proxy
+      dockerfile: Dockerfile
+    container_name: reverse-proxy
+    hostname: www.localdomain
+    networks:
+      default:
+        ipv4_address: "${REVERSE_PROXY_EXTERNAL_IPADDRESS}"
+      dev-internal:
+        ipv4_address: "${REVERSE_PROXY_INTERNAL_IPADDRESS}"
+    ports:
+      - 127.0.0.1:80:80
+      - 127.0.0.1:443:443
+      - 127.0.0.1:2560-2561:2560-2561
 
 networks:
   default:
