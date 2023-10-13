@@ -32,7 +32,7 @@ CRL_REASON=${CRL_REASON:="superseded"}
 # 失効
 openssl ca \
   -batch \
-  -config "$CONFIG_DIR/openssl.cfg" \
+  -config "$CONFIG_FILE" \
   -section CA_inter \
   -extensions inter_ca \
   -md sha256 \
