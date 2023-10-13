@@ -12,6 +12,7 @@ $TTL 3600
                        NS      ns.localdomain.
 @                  IN  A       127.0.0.1
 ns                 IN  A       127.0.0.1
+www                IN  A       127.0.0.1
 ca                 IN  A       127.0.0.1
-apps               IN  CNAME   ns
-app1.apps          IN  CNAME   apps
+apps               IN  CNAME   www
+app1.apps          IN  CNAME   www
