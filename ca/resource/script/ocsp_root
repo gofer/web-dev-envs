@@ -31,6 +31,8 @@ openssl ocsp \
   -url "$ROOT_CA_OCSP_DOMAIN:$ROOT_CA_OCSP_PORT" \
   -port "$ROOT_CA_OCSP_PORT" \
   -timeout $OCSP_TIMEOUT \
+  -ignore_err \
+  -multi 1 \
   -passin "pass:$ROOT_CA_PASSWORD" \
   -index "$ROOT_CA_DIR/index.txt" \
   -rkey "$ROOT_CA_DIR/private/private_key.pem" \

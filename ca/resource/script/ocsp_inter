@@ -31,6 +31,8 @@ openssl ocsp \
   -url "$INTER_CA_OCSP_DOMAIN:$INTER_CA_OCSP_PORT" \
   -port "$INTER_CA_OCSP_PORT" \
   -timeout $OCSP_TIMEOUT \
+  -ignore_err \
+  -multi 1 \
   -passin "pass:$INTER_CA_PASSWORD" \
   -index "$INTER_CA_DIR/index.txt" \
   -rkey "$INTER_CA_DIR/private/private_key.pem" \
