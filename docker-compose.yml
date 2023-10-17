@@ -44,6 +44,9 @@ services:
       - ca/.env
     secrets:
       - ca_secret
+    volumes:
+      - "${VOLUME_PREFIX}/ca/root:/etc/ssl/root_ca:rw"
+      - "${VOLUME_PREFIX}/ca/intermediate:/etc/ssl/inter_ca:rw"
     networks:
       dev-internal:
         ipv4_address: "${CA_INTERNAL_IPADDRESS}"
@@ -54,6 +57,10 @@ services:
       dockerfile: Dockerfile
     container_name: reverse-proxy
     hostname: www.localdomain
+    volumes:
+      - "${VOLUME_PREFIX}/reverse_proxy/ssl/private:/etc/ssl/private:rw"
+      - "${VOLUME_PREFIX}/reverse_proxy/ssl/certs:/etc/ssl/certs/user:rw"
+      - "${VOLUME_PREFIX}/reverse_proxy/nginx:/etc/nginx:rw"
     networks:
       default:
         ipv4_address: "${REVERSE_PROXY_EXTERNAL_IPADDRESS}"
@@ -75,7 +82,8 @@ networks:
           gateway: "${EXTERNAL_GATEWAY}"
   dev-internal:
     driver: bridge
-    internal: true
+    name: "${INTERNAL_NETWORK_NAMAE}"
+    internal: false
     ipam:
       driver: default
       config:

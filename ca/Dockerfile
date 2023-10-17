@@ -1,10 +1,10 @@
 FROM alpine:latest
 
+ARG root_ca_dir
+
 EXPOSE 80
 EXPOSE 2560
 EXPOSE 2561
-
-COPY entrypoint.sh /entrypoint.sh
 
 RUN apk update && apk upgrade \
  && apk add openssl nginx
@@ -20,9 +20,12 @@ COPY resource/script/ /usr/local/bin/
 RUN rm -rf /etc/nginx/*
 COPY resource/nginx /etc/nginx
 
-RUN mkdir -p /var/www/crl
+RUN mkdir -p /var/www/ca
 
 RUN ln -s /dev/stdout /var/log/nginx/access.log \
  && ln -s /dev/stderr /var/log/nginx/error.log
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["nginx"]

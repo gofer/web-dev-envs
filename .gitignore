@@ -1,5 +1,6 @@
 .env
 .secret
+volume
 dns/zones/*
 !dns/zones/localdomain.zone
 ca/resource/ssl/openssl.cnf

@@ -1,5 +1,8 @@
 #!/bin/sh
 
+set -e
+
+
 # ライブラリ読み出し
 source "$(dirname $0)/library.sh"
 
@@ -48,19 +51,19 @@ openssl ca \
   -section CA_inter \
   -extensions inter_ca \
   -passin "pass:$INTER_CA_PASSWORD" \
-  -out "$ROOT_CA_DIR/crl/inter_ca.crl"
+  -out "$INTER_CA_DIR/crl/inter_ca.crl"
 
 
 # CDP向けシンボリックリンク
 
 ## ルートCA
-if [ -f "$CRL_DIR/root_ca.crl" ]; then
-  rm "$CRL_DIR/root_ca.crl"
+if [ -f "$CA_WWW_DIR/root_ca.crl" ]; then
+  rm "$CA_WWW_DIR/root_ca.crl"
 fi
-ln -s "$ROOT_CA_DIR/crl/root_ca.crl" "$CRL_DIR/root_ca.crl"
+ln -s "$ROOT_CA_DIR/crl/root_ca.crl" "$CA_WWW_DIR/root_ca.crl"
 
 ## 中間CA
-if [ -f "$CRL_DIR/inter_ca.crl" ]; then
-  rm "$CRL_DIR/inter_ca.crl"
+if [ -f "$CA_WWW_DIR/inter_ca.crl" ]; then
+  rm "$CA_WWW_DIR/inter_ca.crl"
 fi
-ln -s "$ROOT_CA_DIR/crl/inter_ca.crl" "$CRL_DIR/inter_ca.crl"
+ln -s "$INTER_CA_DIR/crl/inter_ca.crl" "$CA_WWW_DIR/inter_ca.crl"
