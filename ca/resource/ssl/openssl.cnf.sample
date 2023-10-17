@@ -57,7 +57,7 @@ default_days      = 1825
 [ policy_match ]
 countryName             = match
 stateOrProvinceName     = optional
-localityName		        = optional
+localityName            = optional
 organizationName        = optional
 organizationalUnitName  = optional
 commonName              = supplied
@@ -98,11 +98,7 @@ subjectKeyIdentifier  = hash
 basicConstraints      = critical, CA:TRUE
 keyUsage              = critical, digitalSignature, cRLSign, keyEncipherment, keyCertSign
 crlDistributionPoints = URI:http://ca.localdomain/root_ca.crl
-authorityInfoAccess   = @root_ca_aia
-
-[ root_ca_aia ]
-OCSP;URI.1      = http://ca.localdomain:2560
-caIssuers;URI.2 = http://ca.localdomain/root_ca.crt
+authorityInfoAccess   = OCSP;URI:http://ca.localdomain:2560
 
 [ inter_ca_req ]
 distinguished_name = inter_ca_req_distinguished_name
@@ -124,11 +120,7 @@ authorityKeyIdentifier = keyid:always, issuer
 basicConstraints       = critical, CA:TRUE, pathlen:0
 keyUsage               = critical, digitalSignature, cRLSign, keyEncipherment, keyCertSign
 crlDistributionPoints  = URI:http://ca.localdomain/inter_ca.crl
-authorityInfoAccess    = @inter_ca_aia
-
-[ inter_ca_aia ]
-OCSP;URI.1      = http://ca.localdomain:2561
-caIssuers;URI.2 = http://ca.localdomain/inter_ca.crt
+authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2561
 
 [ usr ]
 subjectKeyIdentifier   = hash
