@@ -1,88 +1,128 @@
 $CAContainerName = 'certificate-authority';
 $NginxContainerName = 'reverse-proxy';
 
-$password = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR(
-  [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR(
-    (Read-Host -Prompt 'Password' -AsSecureString)
-  )
-);
-
-$C = Read-Host -Prompt 'C (Country [2-letter code], default is ''JP'')';
-if ([string]::IsNullOrEmpty($C)) {
-  $C = 'JP';
+function Read-Password() {
+  return [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR(
+    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR(
+      (Read-Host -Prompt 'Password' -AsSecureString)
+    )
+  );
 }
 
-$ST = Read-Host -Prompt 'ST (State or Province)';
-if ([string]::IsNullOrEmpty($ST)) {
-  $ST = '';
+function Read-Subject() {
+  $C = Read-Host -Prompt 'C (Country [2-letter code], default is ''JP'')';
+  if ([string]::IsNullOrEmpty($C)) {
+    $C = 'JP';
+  }
+  
+  $ST = Read-Host -Prompt 'ST (State or Province)';
+  if ([string]::IsNullOrEmpty($ST)) {
+    $ST = '';
+  }
+  
+  $L = Read-Host -Prompt 'L ((City or Locality)';
+  if ([string]::IsNullOrEmpty($L)) {
+    $L = '';
+  }
+  
+  $O = Read-Host -Prompt 'O (Organization)';
+  if ([string]::IsNullOrEmpty($O)) {
+    $O = '';
+  }
+  
+  $OU = Read-Host -Prompt 'OU (Organization Unit)';
+  if ([string]::IsNullOrEmpty($OU)) {
+    $OU = '';
+  }
+  
+  $CN = Read-Host -Prompt 'CN (Common Name, ex. www.example.com)';
+  if ([string]::IsNullOrEmpty($CN)) {
+    throw 'Common Name (CN) must not be empty.';
+  }
+  
+  $SAN = Read-Host -Prompt (`
+    "Subject Alternative Name`n" +
+    "  !!! Do NOT specify ""DNS:$CN"" !!!`n" +
+    '  (ex. DNS:www.example.com,DNS:mail.example.com,IP:12.34.56.78)'
+  );
+  if ([string]::IsNullOrEmpty($SAN)) {
+    $SAN = '';
+  }
+
+  return [PSCustomObject]@{
+    C = $C
+    ST = $ST
+    L = $L
+    O = $O
+    OU = $OU
+    CN = $CN
+    SAN = $SAN
+  };
 }
 
-$L = Read-Host -Prompt 'L ((City or Locality)';
-if ([string]::IsNullOrEmpty($L)) {
-  $L = '';
+function Build-SubjectString([PSCustomObject] $subject) {
+  $string = '';
+
+  if (![string]::IsNullOrEmpty($subject.C)) {
+    $string += "/C=$($subject.C)";
+  }
+
+  if (![string]::IsNullOrEmpty($subject.ST)) {
+    $string += "/ST=$($subject.ST)";
+  }
+
+  if (![string]::IsNullOrEmpty($subject.L)) {
+    $string += "/L=$($subject.L)";
+  }
+
+  if (![string]::IsNullOrEmpty($subject.O)) {
+    $string += "/O=$($subject.O)";
+  }
+
+  if (![string]::IsNullOrEmpty($subject.OU)) {
+    $string += "/OU=$($subject.OU)";
+  }
+
+  $string += "/CN=$($subject.CN)";
+
+  return $string;
 }
 
-$O = Read-Host -Prompt 'O (Organization)';
-if ([string]::IsNullOrEmpty($O)) {
-  $O = '';
+function Build-SANString([PSCustomObject] $subject) {
+  $string = "DNS:$($subject.CN)";
+  if (![string]::IsNullOrEmpty($subject.SAN)) {
+    $string += ",$($subject.SAN)";
+  }
+  return $string;
 }
 
-$OU = Read-Host -Prompt 'OU (Organization Unit)';
-if ([string]::IsNullOrEmpty($OU)) {
-  $OU = '';
+function CopyMaterialsToNginxContainer([string] $commonName) {
+  $privateKeyFile = "${commonName}.nopass.pem";
+  $privateKeyFilePath = "/etc/ssl/inter_ca/private/${privateKeyFile}";
+  docker cp "${CAContainerName}:${privateKeyFilePath}" '.';
+  docker cp $privateKeyFile "${NginxContainerName}:/etc/ssl/private/${privateKeyFile}";
+  
+  $certFile = "${commonName}.crt";
+  $certFilePath = "/etc/ssl/inter_ca/certs/${certFile}";
+  docker cp "${CAContainerName}:${certFilePath}" '.';
+  docker cp ${certFile} "${NginxContainerName}:/etc/ssl/certs/${certFile}";
+  
+  $certChainFile = "${commonName}.chain.crt";
+  $certChainFilePath = "/etc/ssl/inter_ca/certs/${certChainFile}";
+  docker cp "${CAContainerName}:${certChainFilePath}" '.';
+  docker cp ${certChainFile} "${NginxContainerName}:/etc/ssl/certs/${certChainFile}";
 }
 
-$CN = Read-Host -Prompt 'CN (Common Name, ex. www.example.com)';
-if ([string]::IsNullOrEmpty($CN)) {
-  throw 'Common Name (CN) must not be empty.';
-}
+$password = Read-Password;
 
-$subAltName = Read-Host -Prompt (`
-  "Subject Alternative Name`n" +
-  "  !!! Do NOT specify ""DNS:$CN"" !!!`n" +
-  '  (ex. DNS:www.example.com,DNS:mail.example.com,IP:12.34.56.78)'
-);
-if ([string]::IsNullOrEmpty($subAltName)) {
-  $subAltName = '';
-}
+$subject = Read-Subject;
 
 $command  = "SERVER_PASSWORD='$password' ";
-$command += "DN='$CN' ";
-$command += "SUBJECT='";
-if (![string]::IsNullOrEmpty($C)) {
-  $command += "/C=$C";
-}
-if (![string]::IsNullOrEmpty($ST)) {
-  $command += "/ST=$ST";
-}
-if (![string]::IsNullOrEmpty($L)) {
-  $command += "/L=$L";
-}
-if (![string]::IsNullOrEmpty($O)) {
-  $command += "/O=$O";
-}
-if (![string]::IsNullOrEmpty($OU)) {
-  $command += "/OU=$OU";
-}
-$command += "/CN=$CN' ";
-$command += "SAN='DNS:$CN";
-if (![string]::IsNullOrEmpty($subAltName)) {
-  $command += ",$subAltName";
-}
-$command += "' ";
+$command += "DN='$($subject.CN)' ";
+$command += "SUBJECT='$(Build-SubjectString $subject)' ";
+$command += "SAN='$(Build-SANString $subject)' ";
 $command += 'generate_server && generate_crl';
 
 docker exec $CAContainerName sh -c "$command";
 
-
-$privateKeyFilePath = "/etc/ssl/inter_ca/private/${CN}.nopass.pem";
-docker cp ("${CAContainerName}:${privateKeyFilePath}") .;
-docker cp "${CN}.nopass.pem" ("${NginxContainerName}:/etc/ssl/private/${CN}.nopass.pem");
-
-$certFilePath = "/etc/ssl/inter_ca/certs/${CN}.crt";
-docker cp ("${CAContainerName}:${certFilePath}") .;
-docker cp "${CN}.crt" ("${NginxContainerName}:/etc/ssl/certs/${CN}.crt");
-
-$certChainFilePath = "/etc/ssl/inter_ca/certs/${CN}.chain.crt";
-docker cp ("${CAContainerName}:${certChainFilePath}") .;
-docker cp "${CN}.chain.crt" ("${NginxContainerName}:/etc/ssl/certs/${CN}.chain.crt");
+CopyMaterialsToNginxContainer $subject.CN;

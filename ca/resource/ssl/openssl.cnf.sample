@@ -98,7 +98,11 @@ subjectKeyIdentifier  = hash
 basicConstraints      = critical, CA:TRUE
 keyUsage              = critical, digitalSignature, cRLSign, keyEncipherment, keyCertSign
 crlDistributionPoints = URI:http://ca.localdomain/root_ca.crl
-authorityInfoAccess   = OCSP;URI:http://ca.localdomain:2560
+authorityInfoAccess   = @root_ca_aia
+
+[ root_ca_aia ]
+OCSP;URI.1      = http://ca.localdomain:2560
+caIssuers;URI.2 = http://ca.localdomain/root_ca.crt
 
 [ inter_ca_req ]
 distinguished_name = inter_ca_req_distinguished_name
@@ -120,7 +124,11 @@ authorityKeyIdentifier = keyid:always, issuer
 basicConstraints       = critical, CA:TRUE, pathlen:0
 keyUsage               = critical, digitalSignature, cRLSign, keyEncipherment, keyCertSign
 crlDistributionPoints  = URI:http://ca.localdomain/inter_ca.crl
-authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2561
+authorityInfoAccess    = @inter_ca_aia
+
+[ inter_ca_aia ]
+OCSP;URI.1      = http://ca.localdomain:2561
+caIssuers;URI.2 = http://ca.localdomain/inter_ca.crt
 
 [ usr ]
 subjectKeyIdentifier   = hash

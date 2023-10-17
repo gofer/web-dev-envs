@@ -1,5 +1,8 @@
 #!/bin/sh
 
+set -e
+
+
 # ライブラリ読み出し
 source "$(dirname $0)/library.sh"
 
@@ -85,3 +88,10 @@ if [ $? -ne 0 ]; then
   echo 'Failed to generate certificate.' > /dev/stderr
   exit 1
 fi
+
+
+# AIA向けシンボリックリンク
+if [ -f "$CA_WWW_DIR/root_ca.crt" ]; then
+  rm "$CA_WWW_DIR/root_ca.crt"
+fi
+ln -s "$ROOT_CA_DIR/certs/root_ca.crt" "$CA_WWW_DIR/root_ca.crt"
