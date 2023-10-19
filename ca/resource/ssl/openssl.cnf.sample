@@ -119,8 +119,12 @@ subjectKeyIdentifier   = hash
 authorityKeyIdentifier = keyid:always, issuer
 basicConstraints       = critical, CA:TRUE, pathlen:0
 keyUsage               = critical, digitalSignature, cRLSign, keyEncipherment, keyCertSign
-crlDistributionPoints  = URI:http://ca.localdomain/inter_ca.crl
-authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2561
+crlDistributionPoints  = URI:http://ca.localdomain/root_ca.crl
+authorityInfoAccess    = @inter_ca_aia
+
+[ inter_ca_aia ]
+OCSP;URI.1      = http://ca.localdomain:2560
+caIssuers;URI.2 = http://ca.localdomain/root_ca.crt
 
 [ usr ]
 subjectKeyIdentifier   = hash
@@ -137,4 +141,8 @@ basicConstraints       = CA:FALSE
 keyUsage               = digitalSignature, keyAgreement, keyEncipherment
 extendedKeyUsage       = serverAuth
 crlDistributionPoints  = URI:http://ca.localdomain/inter_ca.crl
-authorityInfoAccess    = OCSP;URI:http://ca.localdomain:2561
+authorityInfoAccess    = @web_server_ca_aia
+
+[ web_server_ca_aia ]
+OCSP;URI.1      = http://ca.localdomain:2561
+caIssuers;URI.2 = http://ca.localdomain/inter_ca.crt

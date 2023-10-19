@@ -105,12 +105,12 @@ function CopyMaterialsToNginxContainer([string] $commonName) {
   $certFile = "${commonName}.crt";
   $certFilePath = "/etc/ssl/inter_ca/certs/${certFile}";
   docker cp "${CAContainerName}:${certFilePath}" '.';
-  docker cp ${certFile} "${NginxContainerName}:/etc/ssl/certs/${certFile}";
+  docker cp ${certFile} "${NginxContainerName}:/etc/ssl/certs/user/${certFile}";
   
   $certChainFile = "${commonName}.chain.crt";
   $certChainFilePath = "/etc/ssl/inter_ca/certs/${certChainFile}";
   docker cp "${CAContainerName}:${certChainFilePath}" '.';
-  docker cp ${certChainFile} "${NginxContainerName}:/etc/ssl/certs/${certChainFile}";
+  docker cp ${certChainFile} "${NginxContainerName}:/etc/ssl/certs/user/${certChainFile}";
 }
 
 $password = Read-Password;
