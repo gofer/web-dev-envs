@@ -38,4 +38,4 @@ RUN chmod 644 /etc/unbound/unbound.conf \
  && unbound-control-setup \
  && unbound-checkconf /etc/unbound/unbound.conf
 
-CMD unbound-control start && tail -f /dev/null
+CMD ["unbound", "-d"]
