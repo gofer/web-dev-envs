@@ -28,7 +28,7 @@ RUN python3 -m ensurepip \
 
 FROM alpine:latest
 
-COPY --from=configure-building /tmp/unbound.conf /etc/unbound/unbound.conf
+COPY --from=configure-building --chmod=644 /tmp/unbound.conf /etc/unbound/unbound.conf
 
 RUN apk update && apk upgrade \
  && apk add openssl unbound

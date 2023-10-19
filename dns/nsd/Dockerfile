@@ -23,9 +23,9 @@ FROM alpine:latest
 
 RUN apk update && apk upgrade
 
-COPY --from=configure-building /tmp/nsd.conf /etc/nsd/nsd.conf
+COPY --from=configure-building --chmod=644 /tmp/nsd.conf /etc/nsd/nsd.conf
 VOLUME /etc/nsd/zones
-COPY ./zones /tmp/zones
+COPY --chmod=644 ./zones /tmp/zones
 
 RUN apk update && apk upgrade \
  && apk add openssl nsd
@@ -36,7 +36,7 @@ RUN chmod 644 /etc/nsd/nsd.conf \
  && nsd-control-setup \
  && nsd-checkconf /etc/nsd/nsd.conf
 
-COPY ./nsd/entrypoint.sh /entrypoint.sh
+COPY --chmod=755 ./nsd/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["nsd", "-d"]
