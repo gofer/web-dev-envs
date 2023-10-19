@@ -43,7 +43,7 @@ openssl ca \
   -keyform PEM \
   -keyfile "$INTER_CA_DIR/private/private_key.pem" \
   -cert "$INTER_CA_DIR/certs/inter_ca.crt" \
-  -revoke "$DN.crt" \
+  -revoke "$INTER_CA_DIR/certs/$DN.crt" \
   -crl_reason "$CRL_REASON"
 
 if [ $? -ne 0 ]; then
