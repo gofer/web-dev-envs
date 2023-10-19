@@ -9,6 +9,8 @@ services:
         - ipv4_nsd_internal_addr=${NSD_INTERNAL_IPADDRESS}
     container_name: dns-nsd
     hostname: nsd.ns.localdomain
+    volumes:
+      - "${VOLUME_PREFIX}/nsd/zones:/etc/nsd/zones:rw"
     networks:
       dev-internal:
         ipv4_address: "${NSD_INTERNAL_IPADDRESS}"
