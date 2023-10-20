@@ -14,6 +14,13 @@ services:
     networks:
       dev-internal:
         ipv4_address: "${NSD_INTERNAL_IPADDRESS}"
+    restart: unless-stopped
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 16M
   unbound:
     image: dns_unbound
     build:
@@ -35,6 +42,15 @@ services:
     ports:
       - 127.0.0.1:53:53
       - 127.0.0.1:53:53/udp
+    restart: unless-stopped
+    depends_on:
+      - nsd
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 32M
   ca:
     image: certificate_authority
     build:
@@ -52,6 +68,13 @@ services:
     networks:
       dev-internal:
         ipv4_address: "${CA_INTERNAL_IPADDRESS}"
+    restart: unless-stopped
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 16M
   nginx:
     image: reverse_proxy
     build:
@@ -72,6 +95,17 @@ services:
       - 127.0.0.1:80:80
       - 127.0.0.1:443:443
       - 127.0.0.1:2560-2561:2560-2561
+    restart: unless-stopped
+    depends_on:
+      - nsd
+      - unbound
+      - ca
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 64M
 
 networks:
   default:
