@@ -118,7 +118,7 @@ networks:
           gateway: "${EXTERNAL_GATEWAY}"
   dev-internal:
     driver: bridge
-    name: "${INTERNAL_NETWORK_NAMAE}"
+    name: "${INTERNAL_NETWORK_NAME}"
     internal: false
     ipam:
       driver: default
